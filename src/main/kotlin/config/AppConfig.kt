@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
-import java.util.concurrent.ScheduledFuture
-import kotlin.time.Duration
 
 @Configuration
 class AppConfig(private val initProperties: InitProperties) {

@@ -17,7 +17,6 @@ class TaskManager (
     private val taskScheduler: TaskScheduler,
     private val duration: Int
 ) {
-    private var scheduledFuture: ScheduledFuture<*>? = null
 
     @PostConstruct
     fun startTasks() {
@@ -28,24 +27,21 @@ class TaskManager (
     }
 
     private fun startScheduledTasks() {
-       val task = Runnable {
-            performScheduledTask()
+        for (resource in resources) {
+            val task = Runnable {
+                performScheduledTask(resource)
+            }
+
+            // 현재 시간 이후 duration 시작, 그 이후 duration 마다 주기적으로 실행
+            val initialDelay = Instant.now().plus(Duration.ofSeconds(duration.toLong()))
+            val interval = Duration.ofSeconds(duration.toLong())
+
+            taskScheduler.scheduleAtFixedRate(task, initialDelay, interval)
         }
-
-        println(duration)
-
-        // 현재 시간 이후 duration 시작, 그 이후 duration 마다 주기적으로 실행
-        val initialDelay = Instant.now().plus(Duration.ofSeconds(duration.toLong()))
-        val interval = Duration.ofSeconds(duration.toLong())
-
-        taskScheduler.scheduleAtFixedRate(task, initialDelay, interval)
     }
 
-
-    fun performScheduledTask() {
-        for (resource in resources) {
-            println(resource.market + resource.symbol)
-        }
+    private fun performScheduledTask(resource: Resource) {
+        println(resource.market + " " + resource.symbol)
     }
 
 }
