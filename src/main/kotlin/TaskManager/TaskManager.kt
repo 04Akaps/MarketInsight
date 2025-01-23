@@ -1,33 +1,52 @@
 package org.example.TaskManager
 
-import kotlinx.coroutines.*
-import kotlin.random.Random
+import jakarta.annotation.PostConstruct
+import org.example.config.KeyInfo
+import org.example.config.Resource
+import org.springframework.scheduling.TaskScheduler
+import org.springframework.stereotype.Service
+import java.time.Duration
+import java.time.Instant
 
-class TaskManager(private val scope: CoroutineScope) {
+import java.util.concurrent.ScheduledFuture
 
-    private val jobs = mutableListOf<Job>()
+@Service
+class TaskManager (
+    private val keyInfo: KeyInfo,
+    private val resources: List<Resource>,
+    private val taskScheduler: TaskScheduler,
+    private val duration: Int
+) {
+    private var scheduledFuture: ScheduledFuture<*>? = null
 
-    fun startTasks(tasks: List<String>) {
-        tasks.forEach { task ->
-            val job = scope.launch {
-                executeTaskPeriodically(task)
-            }
-            jobs.add(job)
+    @PostConstruct
+    fun startTasks() {
+        println("KeyInfo: $keyInfo")
+        println("Resources: $resources")
+
+        startScheduledTasks()
+    }
+
+    private fun startScheduledTasks() {
+       val task = Runnable {
+            performScheduledTask()
         }
 
+        println(duration)
 
-        Runtime.getRuntime().addShutdownHook(Thread {
-            println("Shutting down gracefully...")
-            scope.cancel()
-        })
+        // 현재 시간 이후 duration 시작, 그 이후 duration 마다 주기적으로 실행
+        val initialDelay = Instant.now().plus(Duration.ofSeconds(duration.toLong()))
+        val interval = Duration.ofSeconds(duration.toLong())
 
-        Thread.currentThread().join()
+        taskScheduler.scheduleAtFixedRate(task, initialDelay, interval)
     }
 
-    private suspend fun executeTaskPeriodically(task: String) {
-        println("Executing $task at ${System.currentTimeMillis()}")
-        delay(Random.nextLong(1000L, 3000L)) // 1~3초 간격으로 실행
-    }
 
+    fun performScheduledTask() {
+        for (resource in resources) {
+            println(resource.market + resource.symbol)
+        }
+    }
 
 }
+
