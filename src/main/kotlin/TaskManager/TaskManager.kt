@@ -31,8 +31,7 @@ class TaskManager (
     private  fun resolveInitTasks() {
         runBlocking {
             try {
-                val data = atomicTokenIssue.getValue()
-                atomicTokenIssue.setValue(data)
+                atomicTokenIssue.resolveValue()
             } catch (e: Exception) {
                 throw CustomException(ErrorCode.ExceptionError, e.toString())
             } finally {
