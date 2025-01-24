@@ -1,5 +1,6 @@
 package org.example.model.memory
 
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -47,7 +48,8 @@ class AtomicTokenIssue(
         }
     }
 
-    private fun setTokenIssue(init: Boolean) = runBlocking {
+    private suspend fun setTokenIssue(init: Boolean) = coroutineScope {
+        // 코루틴, 및 동기적 상황에 대응하기 위한 runBlocking 제어
         if (init) {
             logger.info("token issue init")
 
