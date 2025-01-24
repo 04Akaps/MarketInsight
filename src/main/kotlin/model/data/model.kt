@@ -1,4 +1,4 @@
-package org.example.config
+package org.example.model.data
 
 data class KeyInfo(
     var key: String = "",

@@ -1,5 +1,7 @@
-package org.example.config
+package org.example.config.config
 
+import org.example.model.data.KeyInfo
+import org.example.model.data.Resource
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
