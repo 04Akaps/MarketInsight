@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.HttpMethod
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -50,6 +51,6 @@ class HttpMethod(
     }
 
     companion object {
-        private val logger: Logger = LoggerFactory.getLogger(CustomException::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(HttpMethod::class.java)
     }
 }

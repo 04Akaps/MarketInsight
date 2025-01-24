@@ -21,10 +21,6 @@ class MongoMethod(
     private val template: HashMap<String, MongoTemplate>
 ) {
 
-    fun test() : String {
-        return "serser"
-    }
-
     fun findKeyHistory(): TokenIssueResponse? {
         val pageable: Pageable? = null
         val criteriaMap: Map<String, Any>? = null

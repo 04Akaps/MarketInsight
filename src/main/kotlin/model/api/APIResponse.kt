@@ -1,9 +1,7 @@
 package org.example.model.api
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import lombok.Getter
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field;
 
