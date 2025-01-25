@@ -12,7 +12,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 class AppConfig(private val initProperties: InitProperties) {
 
     @Value("\${init.duration}")
-    private var duration: Int = 0
+    private val duration: Int = 0
+
+    @Value("\${init.keyInfo.trID}")
+    private val trID: String = ""
 
     @Bean
     fun keyInfo(): KeyInfo {
@@ -22,6 +25,11 @@ class AppConfig(private val initProperties: InitProperties) {
     @Bean
     fun resources(): List<Resource> {
         return initProperties.resources
+    }
+
+    @Bean
+    fun trID(): String {
+        return trID
     }
 
     @Bean

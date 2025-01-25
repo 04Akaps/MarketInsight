@@ -15,6 +15,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.stereotype.Service
+import java.lang.Thread.sleep
 import java.time.Duration
 import java.time.Instant
 
@@ -44,6 +45,7 @@ class TaskManager (
     private fun startScheduledTasks() {
         val initialDelay = Instant.now().plus(Duration.ofSeconds(duration.toLong()))
         val interval = Duration.ofSeconds(duration.toLong())
+
 
         for (resource in resources) {
             val task = Runnable {

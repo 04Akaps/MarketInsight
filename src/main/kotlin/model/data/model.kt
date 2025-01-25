@@ -1,11 +1,11 @@
 package org.example.model.data
 
 data class KeyInfo(
-    var key: String = "",
-    var secret: String = ""
+    val key: String = "",
+    val secret: String = ""
 )
 
 data class Resource(
-    var symbol: String = "",
-    var market: String = ""
+    val symbol: String = "",
+    val gubn : Long = 0L
 )
