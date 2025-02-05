@@ -3,16 +3,15 @@ package org.example.utils
 import lombok.RequiredArgsConstructor
 import org.example.exception.CustomException
 import org.example.exception.ErrorCode
+import org.example.model.api.RoutineResources
 import org.example.model.api.TokenIssueResponse
 import org.example.model.enums.MongoTableCollector
 import org.example.repository.mongo.QueryBuilder
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.findOne
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
 @Service
@@ -47,6 +46,13 @@ class MongoMethod(
 
 
         return QueryBuilder.update(template,query,  update, TokenIssueResponse::class.java)
+    }
+
+
+    fun findAllResources(): List<RoutineResources> {
+        val template : MongoTemplate = mongoTemplate(MongoTableCollector.MarketInsight)
+
+        return QueryBuilder.find(template, Query(), RoutineResources::class.java)
     }
 
     private fun mongoTemplate(c: MongoTableCollector) : MongoTemplate {

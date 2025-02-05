@@ -21,8 +21,7 @@ import org.springframework.stereotype.Component
 class HttpMethod(
     private val info: KeyInfo,
     private val httpClient: HttpClient,
-    private val trID : String,
-    private val atomicTokenIssue: AtomicTokenIssue
+    private val trID : String
 ) {
 
     suspend fun getTokenIssue() : TokenIssueResponse? {
@@ -51,19 +50,21 @@ class HttpMethod(
 
     // https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-quotations#L_0e9fb2ba-bbac-4735-925a-a35e08c9a790
     // -> 해외주식 기간별시세[v1_해외주식-010] 참고
-    suspend fun getOverSeasPrice() : OverSeasPriceResponse? {
-        val v : TokenIssueResponse= atomicTokenIssue.resolveValue()
-
+    suspend fun getOverSeasPrice(
+        accessToken : String,
+        exec : String,
+        symbol : String,
+        bymd: String,
+    ) : OverSeasPriceResponse? {
         val baseUrl : String = APIRouter.OverseasPrice.url
 
 
         val queryMap = mapOf(
-            "AUTH" to "",
-            "EXCD" to "",
-            "SYMB" to "",
-            "GUBN" to "",
-            "BYMD" to "",
-            "MODP" to "1"
+            "EXCD" to exec,
+            "SYMB" to symbol,
+            "BYMD" to bymd, // 조회 기준 일자 -> YYYYMMDD
+            "GUBN" to 0, // day
+            "MODP" to 1 // 수정 주가 반영 여부
         )
 
         val response : HttpResponse = httpClient.get(baseUrl) {
@@ -77,7 +78,7 @@ class HttpMethod(
                 append("appKey", info.key)
                 append("appsecret", info.secret)
                 append("tr_id", trID)
-                append("Authorization", "Bearer ${v.accessToken}")
+                append("Authorization", "Bearer ${accessToken}")
             }
         }
 

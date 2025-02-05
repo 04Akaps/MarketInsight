@@ -61,8 +61,6 @@ data class OverSeasPriceResponse(
     val msg1: String
 )
 
-
-
 @Serializable
 data class Output1(
     @SerialName("rsym")
@@ -138,4 +136,17 @@ data class OverSeasPriceResponseError(
 
     @SerialName("msg1")
     val msg1: String
+)
+
+@Serializable
+@Document(collection = "resources")
+data class RoutineResources(
+    @Field("symbol")
+    val symbol: String,
+
+    @Field("excd")
+    val excd: List<String>,
+
+    @Field("updatedDay")
+    val updatedDay: Int,
 )
