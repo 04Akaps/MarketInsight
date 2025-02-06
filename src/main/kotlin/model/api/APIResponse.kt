@@ -150,3 +150,20 @@ data class RoutineResources(
     @Field("updatedDay")
     val updatedDay: Int,
 )
+
+
+@Serializable
+@Document(collection = "price_history")
+data class PriceHistoryDoc(
+    @Field("symbol")
+    val symbol : String,
+
+    @Field("price")
+    val price : String,
+
+    @Field("date")
+    val date : String,
+
+    @Field("excd")
+    val excd : String,
+)

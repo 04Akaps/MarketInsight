@@ -5,6 +5,8 @@ import kotlinx.coroutines.*
 import lombok.RequiredArgsConstructor
 import org.example.exception.CustomException
 import org.example.exception.ErrorCode
+import org.example.model.api.OverSeasPriceResponse
+import org.example.model.api.PriceHistoryDoc
 import org.example.model.api.RoutineResources
 import org.example.model.memory.AtomicTokenIssue
 import org.example.utils.HttpMethod
@@ -15,7 +17,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.stereotype.Service
 import java.lang.Runnable
 import java.time.*
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.launch
+import org.example.TaskManager.marketHandler.MarketHandler
 
 
 @Service
@@ -24,8 +27,12 @@ class TaskManager (
     private val taskScheduler: ThreadPoolTaskScheduler,
     private val atomicTokenIssue: AtomicTokenIssue,
     private val mongoMethod: MongoMethod,
-    private val httpMethod: HttpMethod
+    private val marketHandler: MarketHandler
 ) {
+
+    private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
+        logger.error("Exception occurred while loading token issues", exception)
+    }
 
     @PostConstruct
     private fun resolveInitTasks() = runBlocking {
@@ -44,10 +51,10 @@ class TaskManager (
     }
 
     private suspend fun startScheduledTasks(resources : List<RoutineResources>) {
-        val scope = CoroutineScope(Dispatchers.IO)
+        val scope = CoroutineScope(Dispatchers.IO + exceptionHandler)
 
-        val jobs = resources.map { resource -> scope.async { dailyTask(resource) } }
-        jobs.awaitAll()
+        val jobs = resources.map { resource -> scope.launch { marketHandler.dailyTask(resource) } }
+        jobs.forEach { it.join() }
 
         val now = ZonedDateTime.now(ZoneId.systemDefault()) // 현재 시간
         val nextMidnight = now.plusDays(1).toLocalDate().atStartOfDay(now.zone) // 다음 자정 시간
@@ -58,26 +65,12 @@ class TaskManager (
 
         val dailyTask = Runnable {
             scope.launch {
-                 resources.forEach { resource -> launch { dailyTask(resource) } }
+                 resources.forEach { resource -> launch { marketHandler.dailyTask(resource) } }
             }
         }
 
         // 자정마다 한번씩 실행
         taskScheduler.scheduleAtFixedRate(dailyTask, startTime, period);
-    }
-
-    private suspend fun dailyTask(resource : RoutineResources) {
-
-//        accessToken : String,
-//        exec : String,
-//        symbol : String,
-//        bymd: String,
-
-//        httpMethod.getOverSeasPrice(
-//            atomicTokenIssue.resolveValue().accessToken,
-//            )
-        delay(3000)
-        println(resource.symbol)
     }
 
     companion object {
