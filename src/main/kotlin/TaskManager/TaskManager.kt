@@ -5,11 +5,8 @@ import kotlinx.coroutines.*
 import lombok.RequiredArgsConstructor
 import org.example.exception.CustomException
 import org.example.exception.ErrorCode
-import org.example.model.api.OverSeasPriceResponse
-import org.example.model.api.PriceHistoryDoc
 import org.example.model.api.RoutineResources
 import org.example.model.memory.AtomicTokenIssue
-import org.example.utils.HttpMethod
 import org.example.utils.MongoMethod
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,6 +16,7 @@ import java.lang.Runnable
 import java.time.*
 import kotlinx.coroutines.launch
 import org.example.TaskManager.marketHandler.MarketHandler
+import kotlin.system.exitProcess
 
 
 @Service
@@ -30,8 +28,9 @@ class TaskManager (
     private val marketHandler: MarketHandler
 ) {
 
-    private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
+    private val exitExceptionHandler = CoroutineExceptionHandler { _, exception ->
         logger.error("Exception occurred while loading token issues", exception)
+        exitProcess(1)
     }
 
     @PostConstruct
@@ -51,10 +50,10 @@ class TaskManager (
     }
 
     private suspend fun startScheduledTasks(resources : List<RoutineResources>) {
-        val scope = CoroutineScope(Dispatchers.IO + exceptionHandler)
-
-        val jobs = resources.map { resource -> scope.launch { marketHandler.dailyTask(resource) } }
-        jobs.forEach { it.join() }
+        CoroutineScope(Dispatchers.Default + exitExceptionHandler).launch {
+            val jobs = resources.map { resource -> launch { marketHandler.dailyTask(resource) } }
+            jobs.forEach { it.join() }
+        }
 
         val now = ZonedDateTime.now(ZoneId.systemDefault()) // 현재 시간
         val nextMidnight = now.plusDays(1).toLocalDate().atStartOfDay(now.zone) // 다음 자정 시간
@@ -64,8 +63,8 @@ class TaskManager (
         val period = Duration.ofDays(1) // 다시 동작하는 주기
 
         val dailyTask = Runnable {
-            scope.launch {
-                 resources.forEach { resource -> launch { marketHandler.dailyTask(resource) } }
+            CoroutineScope(Dispatchers.Default + exitExceptionHandler).launch {
+                resources.forEach { resource -> launch { marketHandler.dailyTask(resource) } }
             }
         }
 

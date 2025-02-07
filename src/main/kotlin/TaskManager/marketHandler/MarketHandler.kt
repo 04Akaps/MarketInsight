@@ -1,9 +1,7 @@
 package org.example.TaskManager.marketHandler
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.mongodb.bulk.BulkWriteResult
+import kotlinx.coroutines.*
 import lombok.RequiredArgsConstructor
 import org.example.model.api.OverSeasPriceResponse
 import org.example.model.api.PriceHistoryDoc
@@ -29,40 +27,43 @@ class MarketHandler (
 
     suspend fun dailyTask(resource : RoutineResources) {
         val symbol: String = resource.symbol
-        val scope = CoroutineScope(Dispatchers.IO + exceptionHandler)
 
-        for (ec in resource.excd) {
-            val latestDoc: PriceHistoryDoc? = mongoMethod.findLatestPriceHistory(symbol, ec)
+        // 부모 coroutine Scope를 사용 및 예외 처리 공유
 
-            latestDoc?.let {
-                val latestDate : String = ""
+        coroutineScope {
+            val jobs = resource.excd.map { ec -> launch {
+                val latestDoc: PriceHistoryDoc? = mongoMethod.findLatestPriceHistory(symbol, ec)
 
-            } ?: run {
-                // 데이터가 없다면 초반부터 수집
+                latestDoc?.let {
+                    val latestDate : String = ""
 
-                val overSeasData : OverSeasPriceResponse? = httpMethod.getOverSeasPrice(
-                    atomicTokenIssue.resolveValue().accessToken,
-                    ec,
-                    symbol,
-                    ""
-                )
+                } ?: run {
+                    // 데이터가 없다면 초반부터 수집
+                    val overSeasData : OverSeasPriceResponse? = httpMethod.getOverSeasPrice(
+                        atomicTokenIssue.resolveValue().accessToken,
+                        ec,
+                        symbol,
+                        ""
+                    )
 
-                overSeasData?.let {
-                    val job = scope.launch(Dispatchers.Default) {
-                        processOverSeasData(symbol, ec, it)
+                    if (overSeasData != null) {
+                        launch(Dispatchers.Default + exceptionHandler) {
+                            processOverSeasData(symbol, ec, overSeasData)
+                        }
+                    } else {
+                        logger.info("Unable to determine overseas data for symbol ${symbol}-${ec}")
                     }
-                    job.join()
-                } ?: {
-                    logger.info("Unable to determine over seas data for symbol $symbol")
+
                 }
+            }}
 
-            }
-
+            jobs.forEach { it.join() }
         }
     }
 
     private suspend fun processOverSeasData(symbol: String, excd:String, it: OverSeasPriceResponse) {
-        mongoMethod.upsertPriceHistory(symbol, excd, it.output2)
+        val result: BulkWriteResult = mongoMethod.upsertPriceHistory(symbol, excd, it.output2)
+        logger.info("${symbol}-${excd} bulk inserted count ${result.insertedCount}, modified count ${result.modifiedCount}")
     }
 
     companion object {
