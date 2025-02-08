@@ -27,6 +27,7 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 
 @Service
 @RequiredArgsConstructor
@@ -55,13 +56,47 @@ class MongoMethod(
         }
 
         query.collation(Collation.of("en").numericOrdering(true))
-
         query.with(PageRequest.of(page, size))
 
         val template : MongoTemplate = mongoTemplate(MongoTableCollector.MarketInsight)
         val result : List<PriceHistoryDoc>  = template.find(query, PriceHistoryDoc::class.java)
 
         return@readOnly ChartMapper.map(result)
+    }
+
+    fun findAllVolume(
+        symbol: String,
+        excd : String,
+        startDate : String,
+        endDate : String
+    ) : String = TxAdvice.readOnly {
+        // -> 파이프라인을 사용해도 되지만, DB에 대해서 많은 연산을 하게 하고 싶지가 않기 떄문에, client에서 계산
+        //        val aggregation = Aggregation.newAggregation(
+        //            Aggregation.match(
+        //                Criteria.where("excd").`is`(excd)
+        //                    .and("symbol").`is`(symbol)
+        //                    .and("date").gte(startDate).lte(endDate)
+        //            ),
+        //            Aggregation.group()  // 모든 결과를 그룹화 (그룹핑 기준 없이 모든 데이터 합산)
+        //                .sum("price").`as`("totalPrice")  // price 필드를 합산하여 totalPrice라는 필드로 생성
+        //        )
+
+        val query = Query()
+
+        query.addCriteria(Criteria.where("excd").`is`(excd))
+        query.addCriteria(Criteria.where("symbol").`is`(symbol))
+        query.collation(Collation.of("en").numericOrdering(true))
+
+        query.addCriteria(Criteria.where("date").gte(startDate).lte(endDate))
+
+        val template : MongoTemplate = mongoTemplate(MongoTableCollector.MarketInsight)
+        val results: List<PriceHistoryDoc> = template.find(query, PriceHistoryDoc::class.java)
+
+        val totalPrice = results.fold(BigDecimal.ZERO) { sum, doc ->
+            sum + doc.price.toBigDecimal()
+        }
+
+        return@readOnly totalPrice.toString()
     }
 
     fun findKeyHistory(): TokenIssueResponse? = TxAdvice.readOnly {

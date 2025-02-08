@@ -14,5 +14,7 @@ enum class ErrorCode(
 
 
     FailedToGetChartData(7, "Failed to get chart data"),
+    FailedToGetAllVolume(8, "Failed to get all volume info"),
     NotSupportedOrderRequest(9, "Failed to get order request"),
+    StartDateLowerThanEndDate(10, "startDate must be bigger than endDate"),
 }

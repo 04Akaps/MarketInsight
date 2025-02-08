@@ -15,7 +15,12 @@ class CustomException(
         logger.error("Exception created with code: ${codeInterface.code} and message: ${super.message}")
     }
 
+    fun getCodeInterface(): CodeInterface {
+        return this.codeInterface
+    }
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(CustomException::class.java)
+
     }
 }
