@@ -3,6 +3,7 @@ package org.example.TaskManager.marketHandler
 import com.mongodb.bulk.BulkWriteResult
 import kotlinx.coroutines.*
 import lombok.RequiredArgsConstructor
+import org.example.model.api.Output2
 import org.example.model.api.OverSeasPriceResponse
 import org.example.model.api.PriceHistoryDoc
 import org.example.model.api.RoutineResources
@@ -12,6 +13,8 @@ import org.example.utils.MongoMethod
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 @Component
@@ -33,27 +36,26 @@ class MarketHandler (
         coroutineScope {
             val jobs = resource.excd.map { ec -> launch {
                 val latestDoc: PriceHistoryDoc? = mongoMethod.findLatestPriceHistory(symbol, ec)
+                var latestDocDate : String  = ""
+                val now : String = getTodayDateFormatted()
 
                 latestDoc?.let {
-                    val latestDate : String = ""
+                    latestDocDate = it.date
+                }
 
-                } ?: run {
-                    // 데이터가 없다면 초반부터 수집
-                    val overSeasData : OverSeasPriceResponse? = httpMethod.getOverSeasPrice(
-                        atomicTokenIssue.resolveValue().accessToken,
-                        ec,
-                        symbol,
-                        ""
-                    )
+                val overSeasData : OverSeasPriceResponse? = httpMethod.getOverSeasPrice(
+                    atomicTokenIssue.resolveValue().accessToken,
+                    ec,
+                    symbol,
+                    now
+                )
 
-                    if (overSeasData != null) {
-                        launch(Dispatchers.Default + exceptionHandler) {
-                            processOverSeasData(symbol, ec, overSeasData)
-                        }
-                    } else {
-                        logger.info("Unable to determine overseas data for symbol ${symbol}-${ec}")
+                if (overSeasData != null && overSeasData.output2.isNotEmpty()) {
+                    launch(Dispatchers.Default + exceptionHandler) {
+                        processOverSeasData(symbol, ec, latestDocDate, overSeasData.output2)
                     }
-
+                } else {
+                    logger.info("Unable to determine overseas data for symbol ${symbol}-${ec}")
                 }
             }}
 
@@ -61,9 +63,15 @@ class MarketHandler (
         }
     }
 
-    private suspend fun processOverSeasData(symbol: String, excd:String, it: OverSeasPriceResponse) {
-        val result: BulkWriteResult = mongoMethod.upsertPriceHistory(symbol, excd, it.output2)
+    private fun processOverSeasData(symbol: String, excd:String, latestDocDate:String, it: List<Output2>) {
+        val result: BulkWriteResult = mongoMethod.upsertPriceHistory(symbol, excd, latestDocDate, it)
         logger.info("${symbol}-${excd} bulk inserted count ${result.insertedCount}, modified count ${result.modifiedCount}")
+    }
+
+    private fun getTodayDateFormatted(): String {
+        val today = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        return today.format(formatter)
     }
 
     companion object {

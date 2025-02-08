@@ -146,9 +146,6 @@ data class RoutineResources(
 
     @Field("excd")
     val excd: List<String>,
-
-    @Field("updatedDay")
-    val updatedDay: Int,
 )
 
 

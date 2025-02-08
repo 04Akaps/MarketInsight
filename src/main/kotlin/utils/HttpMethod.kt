@@ -38,7 +38,7 @@ class HttpMethod(
         return when (response.status) {
             HttpStatusCode.OK -> {
                 val temp: TempTokenIssueResponse = Json.decodeFromString<TempTokenIssueResponse>(responseBody)
-                TokenIssuerMapper.toTokenIssuer(temp)
+                TokenIssuerMapper.map(temp)
             }
             else -> {
                 val res: TokenIssueResponseError = Json.decodeFromString<TokenIssueResponseError>(responseBody)

@@ -1,7 +1,7 @@
 # MarketInsight
 한국 투자 증권 API를 활용한 주식 시세 조회 Project [ Kotlin, Spring ]
 
-# 사용하는 API 정리 문서
+# 한국 투자 증권 API 정리 문서
 
 <h3> key 발급 </h3>
 
@@ -62,4 +62,50 @@ TSLA를 Key로 잡고 마켓만큼 코루틴 생성 및 관리
 2. 하루 기준으로 저장을 한다.
 ```
 GUBN = 0
+```
+
+# 데이터 저장 구조
+
+1. Auth Key
+```
+{
+  "accessToken": "",
+  "accessTokenExpired": {
+    "$numberLong": "1739074535"
+  },
+  "expiresIn": 86400,
+  "tokenType": "Bearer"
+}
+```
+
+2. Price History
+```
+{
+  "excd": "NAS",
+  "date": "20250206",
+  "symbol": "TSLA",
+  "price": "374.3200"
+}
+```
+
+
+3. Resources
+```
+{
+  "symbol": "TSLA",
+  "excd": [
+    "HKS",
+    "NYS",
+    "NAS",
+    "AMS",
+    "TSE",
+    "SHS",
+    "SZS",
+    "SHI",
+    "SZI",
+    "HSX",
+    "HNX",
+    "TestError"
+  ]
+}
 ```
