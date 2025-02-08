@@ -4,6 +4,9 @@ import com.mongodb.bulk.BulkWriteResult
 import com.mongodb.internal.bulk.WriteRequest
 import lombok.RequiredArgsConstructor
 import org.example.advice.TxAdvice
+import org.example.api.prices.model.Chart
+import org.example.api.prices.model.PriceInfo
+import org.example.api.protocol.Response
 import org.example.exception.CustomException
 import org.example.exception.ErrorCode
 import org.example.model.api.Output2
@@ -11,8 +14,10 @@ import org.example.model.api.PriceHistoryDoc
 import org.example.model.api.RoutineResources
 import org.example.model.api.TokenIssueResponse
 import org.example.model.enums.MongoTableCollector
+import org.example.model.mapper.ChartMapper
 import org.example.model.mapper.OutPut2Checker
 import org.example.repository.mongo.QueryBuilder
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.BulkOperations
@@ -28,6 +33,36 @@ import org.springframework.stereotype.Service
 class MongoMethod(
     private val template: HashMap<String, MongoTemplate>,
 ) {
+
+    fun findChartFromSymbol(
+        symbol:String,
+        excd: String,
+        order:String,
+        page : Int,
+        size : Int
+    ) : List<PriceInfo> = TxAdvice.readOnly {
+        val query = Query()
+
+        query.addCriteria(Criteria.where("excd").`is`(excd))
+        query.addCriteria(Criteria.where("symbol").`is`(symbol))
+
+        val o :String = order.lowercase()
+
+        if (o == "asc") {
+            query.with(Sort.by(Sort.Order.asc("date")))
+        }else {
+            query.with(Sort.by(Sort.Order.desc("date")))
+        }
+
+        query.collation(Collation.of("en").numericOrdering(true))
+
+        query.with(PageRequest.of(page, size))
+
+        val template : MongoTemplate = mongoTemplate(MongoTableCollector.MarketInsight)
+        val result : List<PriceHistoryDoc>  = template.find(query, PriceHistoryDoc::class.java)
+
+        return@readOnly ChartMapper.map(result)
+    }
 
     fun findKeyHistory(): TokenIssueResponse? = TxAdvice.readOnly {
         val pageable: Pageable? = null
@@ -56,7 +91,6 @@ class MongoMethod(
 
         return@run QueryBuilder.update(template,query,  update, TokenIssueResponse::class.java)
     }
-
 
     fun findAllResources(): List<RoutineResources>  = TxAdvice.readOnly {
         val template : MongoTemplate = mongoTemplate(MongoTableCollector.MarketInsight)

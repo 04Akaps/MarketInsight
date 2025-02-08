@@ -11,4 +11,8 @@ enum class ErrorCode(
     ExceptionError(4, "err occurred"),
     FailedToCallClient(5, "Failed to call client : "),
     FailedToSetKeyHistory(6, "Failed to set key history"),
+
+
+    FailedToGetChartData(7, "Failed to get chart data"),
+    NotSupportedOrderRequest(9, "Failed to get order request"),
 }
