@@ -50,6 +50,14 @@ dependencies {
     // 코루틴
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
+    // web
+    implementation("org.springframework.boot:spring-boot-starter-web")
+
+    // loombok
+    compileOnly ("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+
     testImplementation(kotlin("test"))
 }
 
