@@ -64,6 +64,11 @@ TSLA를 Key로 잡고 마켓만큼 코루틴 생성 및 관리
 GUBN = 0
 ```
 
+3. 한국 투자증권에서 데이터를 제공하지 않는 경우 Logging만 진행하며, 에러 전파를 하지 않는다.
+```
+Unable to determine overseas data for symbol TSLA-SZS
+```
+
 # 데이터 저장 구조
 
 1. Auth Key
