@@ -4,14 +4,12 @@ import com.mongodb.bulk.BulkWriteResult
 import com.mongodb.internal.bulk.WriteRequest
 import lombok.RequiredArgsConstructor
 import org.example.advice.TxAdvice
-import org.example.api.prices.model.Chart
+import org.example.api.domains.resources.model.Resources
 import org.example.api.prices.model.PriceInfo
-import org.example.api.protocol.Response
 import org.example.exception.CustomException
 import org.example.exception.ErrorCode
 import org.example.model.api.Output2
 import org.example.model.api.PriceHistoryDoc
-import org.example.model.api.RoutineResources
 import org.example.model.api.TokenIssueResponse
 import org.example.model.enums.MongoTableCollector
 import org.example.model.mapper.ChartMapper
@@ -127,10 +125,19 @@ class MongoMethod(
         return@run QueryBuilder.update(template,query,  update, TokenIssueResponse::class.java)
     }
 
-    fun findAllResources(): List<RoutineResources>  = TxAdvice.readOnly {
+    fun findResource(symbol : String) : Resources? = TxAdvice.readOnly {
         val template : MongoTemplate = mongoTemplate(MongoTableCollector.MarketInsight)
 
-        return@readOnly QueryBuilder.find(template, Query(), RoutineResources::class.java)
+        val query = Query()
+        query.addCriteria(Criteria.where("symbol").`is`(symbol))
+
+        return@readOnly QueryBuilder.findOne(template, query, Resources::class.java)
+    }
+
+    fun findAllResources(): List<Resources>  = TxAdvice.readOnly {
+        val template : MongoTemplate = mongoTemplate(MongoTableCollector.MarketInsight)
+
+        return@readOnly QueryBuilder.find(template, Query(), Resources::class.java)
     }
 
     fun findLatestPriceHistory(symbol : String, excd : String): PriceHistoryDoc? = TxAdvice.readOnly {

@@ -114,3 +114,36 @@ Unable to determine overseas data for symbol TSLA-SZS
   ]
 }
 ```
+
+
+# API 작업 내용
+
+1. API의 에러케이스에 대해서는 Exception을 통해서 처리
+- `package org.example.exception` 파일 참고
+
+2. Response 객체를 범용적으로 사용하여, Response 포멧을 유지
+- `package org.example.api.protocol`
+
+3. CustomRequestAnnotation을 활용
+- `package org.example.api.custom.web`
+
+## API Spec
+
+```
+1. api/v1/price/chart/{excd}/{symbol}
+
+거래소와, 항목을 Path값을 통해서 수용하고, 추가로 Query값을 적용하요 원하는 가격 데이터를 노출
+
+2. api/v1/price/all-volume/{excd}/{symbol}
+
+특정 항목에 대한 총 가격을 노출
+- startDate, endDate를 추가로 받아서 처리
+
+3. api/v1/resource/all-resources
+
+수집중인 총 resources를 노출
+
+3. api/v1/resource/resource/{symbol}
+
+특정 항목에 대한 resources 정보를 노출
+```

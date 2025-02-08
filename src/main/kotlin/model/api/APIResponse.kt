@@ -139,17 +139,6 @@ data class OverSeasPriceResponseError(
 )
 
 @Serializable
-@Document(collection = "resources")
-data class RoutineResources(
-    @Field("symbol")
-    val symbol: String,
-
-    @Field("excd")
-    val excd: List<String>,
-)
-
-
-@Serializable
 @Document(collection = "price_history")
 data class PriceHistoryDoc(
     @Field("symbol")

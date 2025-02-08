@@ -17,4 +17,7 @@ enum class ErrorCode(
     FailedToGetAllVolume(8, "Failed to get all volume info"),
     NotSupportedOrderRequest(9, "Failed to get order request"),
     StartDateLowerThanEndDate(10, "startDate must be bigger than endDate"),
+    NoResourcesData(11, "no resource data"),
+    FailedToGetResourcesData(12, "failed to get resources"),
+    FailedToGetAllResourcesData(13, "failed to get all resources"),
 }

@@ -5,7 +5,6 @@ import kotlinx.coroutines.*
 import lombok.RequiredArgsConstructor
 import org.example.exception.CustomException
 import org.example.exception.ErrorCode
-import org.example.model.api.RoutineResources
 import org.example.model.memory.AtomicTokenIssue
 import org.example.utils.MongoMethod
 import org.slf4j.Logger
@@ -16,6 +15,7 @@ import java.lang.Runnable
 import java.time.*
 import kotlinx.coroutines.launch
 import org.example.TaskManager.marketHandler.MarketHandler
+import org.example.api.domains.resources.model.Resources
 import kotlin.system.exitProcess
 
 
@@ -35,7 +35,7 @@ class TaskManager (
 
     @PostConstruct
     private fun resolveInitTasks() = runBlocking {
-        var resources : List<RoutineResources> = emptyList()
+        var resources : List<Resources> = emptyList()
 
         try {
             atomicTokenIssue.resolveValue()
@@ -49,7 +49,7 @@ class TaskManager (
         }
     }
 
-    private suspend fun startScheduledTasks(resources : List<RoutineResources>) {
+    private suspend fun startScheduledTasks(resources : List<Resources>) {
         CoroutineScope(Dispatchers.Default + exitExceptionHandler).launch {
             val jobs = resources.map { resource -> launch { marketHandler.dailyTask(resource) } }
             jobs.forEach { it.join() }

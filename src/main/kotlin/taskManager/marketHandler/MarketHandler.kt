@@ -3,10 +3,10 @@ package org.example.TaskManager.marketHandler
 import com.mongodb.bulk.BulkWriteResult
 import kotlinx.coroutines.*
 import lombok.RequiredArgsConstructor
+import org.example.api.domains.resources.model.Resources
 import org.example.model.api.Output2
 import org.example.model.api.OverSeasPriceResponse
 import org.example.model.api.PriceHistoryDoc
-import org.example.model.api.RoutineResources
 import org.example.model.memory.AtomicTokenIssue
 import org.example.utils.HttpMethod
 import org.example.utils.MongoMethod
@@ -28,7 +28,7 @@ class MarketHandler (
         logger.error("Exception occurred while loading token issues", exception)
     }
 
-    suspend fun dailyTask(resource : RoutineResources) {
+    suspend fun dailyTask(resource : Resources) {
         val symbol: String = resource.symbol
 
         // 부모 coroutine Scope를 사용 및 예외 처리 공유
